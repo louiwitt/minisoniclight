@@ -1,4 +1,7 @@
 import express from 'express'
+import db from './db.js'
+
+console.log(db, 'Index initialized')
 
 const app = express()
 const port = 3000
