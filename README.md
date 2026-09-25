@@ -42,7 +42,7 @@ User identification is currently handled through the `X-User-Id` HTTP header. Th
 ### Backend
 
 ```bash
-cd server
+cd backend
 npm install
 npm run dev
 ```
