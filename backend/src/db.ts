@@ -28,4 +28,16 @@ db.exec(`
   )
 `)
 
+// Create the admin account if it does not already exist.
+const admin = db
+  .prepare('SELECT id FROM users WHERE username = ?')
+  .get('SuperSecretAdmin')
+
+if (!admin) {
+  db.prepare(`
+    INSERT INTO users (username, role)
+    VALUES (?, ?)
+  `).run('SuperSecretAdmin', 'admin')
+}
+
 export default db

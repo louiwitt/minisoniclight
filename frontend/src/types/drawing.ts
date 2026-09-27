@@ -8,3 +8,12 @@ export interface Stroke {
   width: number
   points: Point[]
 }
+
+export interface Drawing {
+  id: number
+  user_id: number
+  username: string
+  data: string
+  created_at: string
+  updated_at: string
+}

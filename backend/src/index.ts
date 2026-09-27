@@ -31,6 +31,13 @@ app.post('/login', (req, res) => {
   // Delete excess spaces
   const trimmedUsername = username.trim()
 
+  // Block connection with SuperSecretAdmin username
+  if (trimmedUsername === 'SuperSecretAdmin') {
+    return res.status(403).json({
+      error: 'Admin account cannot be used for regular login',
+    })
+  }
+
   // Check if user already exists
   const existingUserStmt = db.prepare('SELECT id, username, role FROM users WHERE username = ?')
   const existingUser = existingUserStmt.get(trimmedUsername)
@@ -49,7 +56,6 @@ app.post('/login', (req, res) => {
     username: trimmedUsername,
     role: 'user',
   })
-
 })
 
 
@@ -168,6 +174,75 @@ app.put('/drawing', (req, res) => {
   return res.json({
     message: 'Drawing updated',
   })
+})
+
+// Get admin id
+app.get('/admin/id', (req, res) => {
+  const username = "SuperSecretAdmin"
+  const adminIdStmt = db.prepare('SELECT id FROM users WHERE username = ?')
+  const adminId = adminIdStmt.get(username)
+  if (!adminId) {
+    return res.status(404).json({
+      error: 'Admin not found',
+    })
+  }
+  // Return id
+  return res.json(adminId)
+})
+
+// Get all drawings as an admin
+app.get('/admin/drawings', (req, res) => {
+  const userId = Number(req.header('X-User-Id'))
+
+  if (!Number.isInteger(userId)) {
+    return res.status(401).json({
+      error: 'User identification is required',
+    })
+  }
+
+  const user = db
+    .prepare(`
+      SELECT id, username, role
+      FROM users
+      WHERE id = ?
+    `)
+    .get(userId) as {
+      id: number
+      username: string
+      role: string
+    } | undefined
+
+  if (!user) {
+    return res.status(401).json({
+      error: 'User not found',
+    })
+  }
+
+  // Check if user is really admin
+  if (user.role !== 'admin') {
+    return res.status(403).json({
+      error: 'Admin access required',
+    })
+  }
+
+  // Get drawings
+  const drawings = db
+    .prepare(`
+      SELECT
+        drawings.id,
+        drawings.user_id,
+        users.username,
+        drawings.data,
+        drawings.created_at,
+        drawings.updated_at
+      FROM drawings
+      INNER JOIN users
+        ON users.id = drawings.user_id
+      ORDER BY drawings.created_at DESC
+    `)
+    .all()
+
+  return res.json(drawings)
 })
 
 
