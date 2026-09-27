@@ -13,7 +13,8 @@
 
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import type { Stroke } from '../types/drawing'
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 let context: CanvasRenderingContext2D | null = null
@@ -22,6 +23,17 @@ const height = 500
 let isDrawing = false
 let lastX = 0
 let lastY = 0
+
+let brushColor = '#000000'
+let brushWidth = 3
+
+const strokes = ref<Stroke[]>([])
+let currentStroke: Stroke | null = null
+
+// Props
+const props = defineProps<{
+    strokes: Stroke[]
+}>()
 
 onMounted(() => {
     if (!canvas.value) {
@@ -33,49 +45,119 @@ onMounted(() => {
     }
     context.lineCap = 'round'
     context.lineJoin = 'round'
-    context.lineWidth = 3
-    context.strokeStyle = '#000000'
+    context.lineWidth = brushWidth
+    context.strokeStyle = brushColor
+
+    drawStrokes(props.strokes)
+
 })
 
+// If takes time to get existing drawing 
+watch(
+  () => props.strokes,
+  (newStrokes) => {
+    drawStrokes(newStrokes)
+  },
+  { deep: true }
+)
 
-function startDrawing(event: MouseEvent) {
-    if (!canvas.value) {
+// Draw the strokes of an existing drawing
+function drawStrokes(strokes: Stroke[]) {
+    if (!context) {
         return
     }
 
-    // Position of the canvas
-    const rect = canvas.value.getBoundingClientRect()
+    // Clear the canvas before drawing the existing one
+    context.clearRect(0, 0, width, height)
 
-    // Position x, y in the canvas
-    lastX = event.clientX - rect.left
-    lastY = event.clientY - rect.top
+    // Trace the strokes
+    for (const stroke of strokes) {
+        context.strokeStyle = stroke.color
+        context.lineWidth = stroke.width
+
+        // the stroke doesn't have any points
+        if (stroke.points.length === 0) {
+            continue
+        }
+        
+        // Begin tracing the strokes
+        context.beginPath()
+
+        // Init the first point
+        const firstPoint = stroke.points[0]
+        if (!firstPoint) {
+            continue
+        }
+        context.moveTo(firstPoint.x, firstPoint.y)
+
+        // Add the following points
+        for (const point of stroke.points.slice(1)) {
+            context.lineTo(point.x, point.y)
+        }
+
+        context.stroke()
+    }
+}
+
+function startDrawing(event: MouseEvent) {
+
+    // get position of the mouse in the canvas
+    const position = getMousePosition(event)
+
+    if (!position) return
+
+    // initialize x and y
+    lastX = position.x
+    lastY = position.y
     isDrawing = true
+
+    // add to current stroke
+    currentStroke = {
+        color: brushColor,
+        width: brushWidth,
+        points: [position],
+    }
+
+    // store into strokes
+    strokes.value.push(currentStroke)
 }
 
 function draw(event: MouseEvent) {
-    if (!isDrawing || !canvas.value || !context) {
+    if (!isDrawing || !canvas.value || !context || !currentStroke) {
         return
     }
 
-    // Position of the canvas
-    const rect = canvas.value.getBoundingClientRect()
+    // get position of the mouse in the canvas
+    const position = getMousePosition(event)
 
-    // Position x, y in the canvas
-    const x = event.clientX - rect.left
-    const y = event.clientY - rect.top
+    if (!position) return
 
     // Draw
     context.beginPath()
     context.moveTo(lastX, lastY)
-    context.lineTo(x, y)
+    context.lineTo(position.x, position.y)
     context.stroke()
-    
-    lastX = x
-    lastY = y
+
+    lastX = position.x
+    lastY = position.y
+
+    // push each new point in the current stroke
+    currentStroke.points.push(position)
 }
 
 function stopDrawing() {
     isDrawing = false
+    currentStroke = null
 }
 
+function getMousePosition(event: MouseEvent) {
+    if (!canvas.value) return null
+
+    const rect = canvas.value.getBoundingClientRect()
+
+    return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+    }
+}
 </script>

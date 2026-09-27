@@ -1,21 +1,23 @@
 <template>
     <main>
         <h1>Drawing</h1>
-        <DrawingCanvas />
+        <DrawingCanvas :strokes="strokes"/>
     </main>
 </template>
 
 
 <script setup lang="ts">
 import DrawingCanvas from '../components/DrawingCanvas.vue'
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
+import type { Stroke } from '../types/drawing'
 
+const strokes = ref<Stroke[]>([])
 
 onMounted(() => {
-  loadDrawing()
+    loadDrawing()
 })
 
-
+// Get drawing if it already exists
 async function loadDrawing() {
     const storedUser = localStorage.getItem('user')
 
@@ -38,7 +40,7 @@ async function loadDrawing() {
 
     const drawing = await response.json()
 
-    console.log(drawing)
+    strokes.value = JSON.parse(drawing.data)
 }
 
 </script>
