@@ -1,14 +1,37 @@
 <template>
-    <canvas
+    <div class="drawing-canvas">
+        <div class="toolbar">
+            <label for="color">Color</label>
+
+            <input
+                id="color"
+                v-model="brushColor"
+                type="color"
+            />
+
+            <label for="width">Width</label>
+
+            <input
+                id="width"
+                v-model.number="brushWidth"
+                type="range"
+                min="1"
+                max="30"
+            />
+
+            <span>{{ brushWidth }} px</span>
+        </div>
+
+        <canvas
         ref="canvas"
         :width="width"
         :height="height"
-        style="border: 1px solid white"
         @mousedown="startDrawing"
         @mousemove="draw"
         @mouseup="stopDrawing"
         @mouseleave="stopDrawing"
-    ></canvas>
+        ></canvas>
+    </div>
 </template>
 
 
@@ -24,8 +47,9 @@ let isDrawing = false
 let lastX = 0
 let lastY = 0
 
-let brushColor = '#000000'
-let brushWidth = 3
+// Drawing settings 
+const brushColor = ref('#8080ff') 
+const brushWidth = ref(5)
 
 const strokes = ref<Stroke[]>([])
 let currentStroke: Stroke | null = null
@@ -50,8 +74,8 @@ onMounted(() => {
     }
     context.lineCap = 'round'
     context.lineJoin = 'round'
-    context.lineWidth = brushWidth
-    context.strokeStyle = brushColor
+    context.lineWidth = brushWidth.value
+    context.strokeStyle = brushColor.value
 
     drawStrokes(props.strokes)
 
@@ -118,8 +142,8 @@ function startDrawing(event: MouseEvent) {
 
     // add to current stroke
     currentStroke = {
-        color: brushColor,
-        width: brushWidth,
+        color: brushColor.value,
+        width: brushWidth.value,
         points: [position],
     }
 
@@ -138,6 +162,8 @@ function draw(event: MouseEvent) {
     if (!position) return
 
     // Draw
+    context.strokeStyle = currentStroke.color 
+    context.lineWidth = currentStroke.width
     context.beginPath()
     context.moveTo(lastX, lastY)
     context.lineTo(position.x, position.y)
@@ -167,3 +193,22 @@ function getMousePosition(event: MouseEvent) {
     }
 }
 </script>
+
+<style scoped>
+.drawing-canvas {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+canvas {
+    display: block;
+    border: 1px solid rgb(128, 128, 255);
+}
+</style>
