@@ -30,9 +30,14 @@ let brushWidth = 3
 const strokes = ref<Stroke[]>([])
 let currentStroke: Stroke | null = null
 
-// Props
+// Get existing drawing from the page
 const props = defineProps<{
     strokes: Stroke[]
+}>()
+
+// Send the drawing to the page
+const emit = defineEmits<{
+    drawingUpdate: [strokes: Stroke[]]
 }>()
 
 onMounted(() => {
@@ -54,11 +59,11 @@ onMounted(() => {
 
 // If takes time to get existing drawing 
 watch(
-  () => props.strokes,
-  (newStrokes) => {
-    drawStrokes(newStrokes)
-  },
-  { deep: true }
+    () => props.strokes,
+    (newStrokes) => {
+        drawStrokes(newStrokes)
+    },
+    { deep: true }
 )
 
 // Draw the strokes of an existing drawing
@@ -147,6 +152,7 @@ function draw(event: MouseEvent) {
 
 function stopDrawing() {
     isDrawing = false
+    emit('drawingUpdate', strokes.value)
     currentStroke = null
 }
 
