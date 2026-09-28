@@ -17,14 +17,15 @@ MiniSonicLight is an interactive web application that lets users create, save an
 * Canvas drawing with mouse
 * REST API to create, retrieve and update drawings
 * SQLite persistence for users and drawings
-
-### Coming next
-
 * Connect the canvas to the API
 * Restore saved drawings
 * Admin interface
-* Web Audio API
 
+### Coming next
+
+
+* Web Audio API
+* Website design
 
 ## API
 
