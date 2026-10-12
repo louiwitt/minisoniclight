@@ -100,6 +100,10 @@ body {
   border-inline: 1px solid var(--border);
 }
 
+button {
+  margin-bottom: 16px;
+}
+
 /* =========================
   Typography
    ========================= */
@@ -228,4 +232,12 @@ form {
   .app-logo {
     font-size: 26px;
   }
+}
+
+/* =========================
+  Components
+   ========================= */
+
+.drawing-display {
+  margin-bottom: 60px;
 }

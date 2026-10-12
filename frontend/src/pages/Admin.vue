@@ -14,6 +14,7 @@
         <div
             v-for="drawing in drawings"
             :key="drawing.id"
+            class="drawing-display"
             >
             <h2>{{ drawing.username }}</h2>
             <DrawingDisplay
