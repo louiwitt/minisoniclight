@@ -51,13 +51,20 @@ let lastY = 0
 const brushColor = ref('#8080ff') 
 const brushWidth = ref(5)
 
-const strokes = ref<Stroke[]>([])
-let currentStroke: Stroke | null = null
 
 // Get existing drawing from the page
 const props = defineProps<{
     strokes: Stroke[]
 }>()
+
+const strokes = ref<Stroke[]>(
+    props.strokes.map(stroke => ({
+        ...stroke,
+        points: stroke.points.map(point => ({ ...point })),
+    }))
+)
+
+let currentStroke: Stroke | null = null
 
 // Send the drawing to the page
 const emit = defineEmits<{
@@ -85,7 +92,12 @@ onMounted(() => {
 watch(
     () => props.strokes,
     (newStrokes) => {
-        drawStrokes(newStrokes)
+        strokes.value = newStrokes.map(stroke => ({
+            ...stroke,
+            points: stroke.points.map(point => ({ ...point })),
+        }))
+
+        drawStrokes(strokes.value)
     },
     { deep: true }
 )
@@ -177,9 +189,12 @@ function draw(event: MouseEvent) {
 }
 
 function stopDrawing() {
+    if (!isDrawing) {
+        return
+    }
     isDrawing = false
-    emit('drawingUpdate', strokes.value)
     currentStroke = null
+    emit('drawingUpdate', strokes.value)
 }
 
 function getMousePosition(event: MouseEvent) {
