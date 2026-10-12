@@ -1,6 +1,6 @@
 
 <template>
-    <main>
+    <section>
         <h1>Admin</h1>
 
         <p v-if="error">
@@ -17,13 +17,13 @@
             >
             <h2>{{ drawing.username }}</h2>
             <DrawingDisplay
-                :strokes=parseStrokes(drawing.data)
+                :strokes="parseStrokes(drawing.data)"
             />
             <p>
                 Drawing #{{ drawing.id }}
             </p>
         </div>
-    </main>
+    </section>
 </template>
 
 <script setup lang="ts">

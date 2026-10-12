@@ -1,11 +1,14 @@
 <script setup lang="ts">
-// import HelloWorld from './components/HelloWorld.vue'
-// import DrawingCanvas from './components/DrawingCanvas.vue'
-
 </script>
 
 <template>
-  <main>
+  <header class="app-header">
+    <RouterLink to="/" class="app-logo">
+      MiniSonicLight
+    </RouterLink>
+  </header>
+
+  <main class="app-main">
     <RouterView />
   </main>
 </template>
